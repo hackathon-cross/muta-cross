@@ -53,9 +53,6 @@ info:
 	pwd
 	env
 
-docker-build:
-	docker build -t huobi .
-
 # For counting lines of code
 stats:
 	@cargo count --version || cargo +nightly install --git https://github.com/kbknapp/cargo-count

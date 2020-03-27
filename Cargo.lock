@@ -675,26 +675,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ckb-vm"
-version = "0.18.1"
-source = "git+https://github.com/huwenchao/ckb-vm?rev=7aa43ed#7aa43ed3145f94cec87a3095c373081486531c0e"
-dependencies = [
- "byteorder",
- "bytes 0.5.4",
- "cc",
- "ckb-vm-definitions",
- "derive_more 0.15.0",
- "goblin",
- "libc",
- "memmap",
-]
-
-[[package]]
-name = "ckb-vm-definitions"
-version = "0.18.1"
-source = "git+https://github.com/huwenchao/ckb-vm?rev=7aa43ed#7aa43ed3145f94cec87a3095c373081486531c0e"
-
-[[package]]
 name = "clang-sys"
 version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1466,17 +1446,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
-name = "goblin"
-version = "0.0.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3fa261d919c1ae9d1e4533c4a2f99e10938603c4208d56c05bec7a872b661b0"
-dependencies = [
- "log",
- "plain",
- "scroll",
-]
-
-[[package]]
 name = "h2"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1619,21 +1588,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
 dependencies = [
  "quick-error",
-]
-
-[[package]]
-name = "huobi-chain"
-version = "0.2.0"
-dependencies = [
- "asset 0.2.0",
- "clap",
- "derive_more 0.15.0",
- "metadata 0.2.0",
- "muta",
- "muta-protocol",
- "node_manager",
- "riscv",
- "tokio 0.2.13",
 ]
 
 [[package]]
@@ -2000,16 +1954,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3728d817d99e5ac407411fa471ff9800a778d88a24685968b36824eaf4bee400"
 
 [[package]]
-name = "memmap"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6585fd95e7bb50d6cc31e20d4cf9afb4e2ba16c5846fc76793f11218da9c475b"
-dependencies = [
- "libc",
- "winapi 0.3.8",
-]
-
-[[package]]
 name = "memoffset"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2163,6 +2107,20 @@ dependencies = [
  "serde_json",
  "tokio 0.2.13",
  "toml 0.5.6",
+]
+
+[[package]]
+name = "muta-hackathon"
+version = "0.2.0"
+dependencies = [
+ "asset 0.2.0",
+ "clap",
+ "derive_more 0.15.0",
+ "metadata 0.2.0",
+ "muta",
+ "muta-protocol",
+ "node_manager",
+ "tokio 0.2.13",
 ]
 
 [[package]]
@@ -2551,12 +2509,6 @@ name = "pkg-config"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05da548ad6865900e60eaba7f589cc0783590a92e940c26953ff81ddbab2d677"
-
-[[package]]
-name = "plain"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 
 [[package]]
 name = "ppv-lite86"
@@ -2998,25 +2950,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "riscv"
-version = "0.2.0"
-dependencies = [
- "async-trait",
- "binding-macro",
- "byteorder",
- "cita_trie",
- "ckb-vm",
- "derive_more 0.15.0",
- "framework",
- "hex",
- "log",
- "muta-protocol",
- "rlp 0.4.4",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "rlp"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3105,27 +3038,6 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
-
-[[package]]
-name = "scroll"
-version = "0.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f84d114ef17fd144153d608fba7c446b0145d038985e7a8cc5d08bb0ce20383"
-dependencies = [
- "rustc_version",
- "scroll_derive",
-]
-
-[[package]]
-name = "scroll_derive"
-version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f1aa96c45e7f5a91cb7fabe7b279f02fea7126239fc40b732316e8b6a2d0fcb"
-dependencies = [
- "proc-macro2 0.4.30",
- "quote 0.6.13",
- "syn 0.15.44",
-]
 
 [[package]]
 name = "secp256k1"

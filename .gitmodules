@@ -1,3 +1,0 @@
-[submodule "duktape"]
-	path = services/riscv/src/vm/c/duktape
-	url = https://github.com/nervosnetwork/muta-duktape-deps.git

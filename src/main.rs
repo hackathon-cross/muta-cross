@@ -5,7 +5,6 @@ use muta::MutaBuilder;
 use node_manager::NodeManagerService;
 use protocol::traits::{Service, ServiceMapping, ServiceSDK};
 use protocol::{ProtocolError, ProtocolErrorKind, ProtocolResult};
-use riscv::RiscvService;
 
 struct DefaultServiceMapping;
 
@@ -18,7 +17,6 @@ impl ServiceMapping for DefaultServiceMapping {
         let service = match name {
             "asset" => Box::new(AssetService::new(sdk)?) as Box<dyn Service>,
             "metadata" => Box::new(MetadataService::new(sdk)?) as Box<dyn Service>,
-            "riscv" => Box::new(RiscvService::init(sdk)?) as Box<dyn Service>,
             "node_manager" => Box::new(NodeManagerService::new(sdk)?) as Box<dyn Service>,
             _ => {
                 return Err(MappingError::NotFoundService {
@@ -35,14 +33,13 @@ impl ServiceMapping for DefaultServiceMapping {
         vec![
             "asset".to_owned(),
             "metadata".to_owned(),
-            "riscv".to_owned(),
             "node_manager".to_owned(),
         ]
     }
 }
 
 fn main() {
-    let matches = clap::App::new("Huobi-chain")
+    let matches = clap::App::new("Muta-Hackathon")
         .version("v0.2.0")
         .author("Muta Dev <muta@nervos.org>")
         .arg(

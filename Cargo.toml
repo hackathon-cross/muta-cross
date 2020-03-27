@@ -1,5 +1,5 @@
 [package]
-name = "huobi-chain"
+name = "muta-hackathon"
 version = "0.2.0"
 authors = ["Muta Dev <muta@nervos.org>"]
 edition = "2018"
@@ -14,13 +14,11 @@ clap = "2.33"
 
 metadata = { path = "services/metadata" }
 asset = { path = "services/asset" }
-riscv = { path = "services/riscv" }
 node_manager = { path = "services/node_manager" }
 
 [workspace]
 members = [
   "services/metadata",
-  "services/riscv",
   "services/asset",
   "services/node_manager"
 ]
