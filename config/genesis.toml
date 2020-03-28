@@ -13,6 +13,10 @@ payload = '''
 '''
 
 [[services]]
+name = "crosschain"
+payload = ""
+
+[[services]]
 name = "metadata"
 payload = '''
 {

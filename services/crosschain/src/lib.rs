@@ -45,8 +45,7 @@ impl<SDK: ServiceSDK> CrosschainService<SDK> {
 
     #[genesis]
     fn init_genesis(&mut self) -> ProtocolResult<()> {
-        let mut nonce: Box<dyn StoreUint64> = self.sdk.alloc_or_recover_uint64("nonce")?;
-        nonce.set(0)
+        self.nonce.set(0)
     }
 
     #[write]

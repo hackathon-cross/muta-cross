@@ -181,7 +181,7 @@ pub struct MintTokenEvent {
 
 impl rlp::Decodable for CkbHeaderInner {
     fn decode(rlp: &rlp::Rlp) -> Result<Self, rlp::DecoderError> {
-        let buf = rlp.at(10)?.as_raw();
+        let buf: Vec<u8> = rlp.at(10)?.as_val()?;
         Ok(Self {
             compact_target:    rlp.at(0)?.as_val()?,
             version:           rlp.at(1)?.as_val()?,
