@@ -112,8 +112,8 @@ pub struct CkbTx {
     pub header_deps:  Vec<Hash>,
     pub inputs:       Vec<CellInput>,
     pub outputs:      Vec<CellOutput>,
-    pub outputs_data: Vec<Bytes>,
-    pub witnesses:    Vec<Bytes>,
+    pub outputs_data: Vec<Hex>,
+    pub witnesses:    Vec<Hex>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -124,8 +124,8 @@ pub struct CellDep {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub enum DepType {
-    Code,
-    DepGroup,
+    code,
+    depgroup,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -152,12 +152,13 @@ pub struct CellOutput {
 pub struct Script {
     pub code_hash: Hash,
     pub hash_type: ScriptHashType,
-    pub args:      Bytes,
+    pub args:      Hex,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub enum ScriptHashType {
-    Data,
+    data,
+    #[serde(rename = "type")]
     Type,
 }
 

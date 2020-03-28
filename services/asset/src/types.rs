@@ -134,7 +134,7 @@ struct AllowanceCodec {
 
 impl rlp::Decodable for Asset {
     fn decode(rlp: &rlp::Rlp) -> Result<Self, rlp::DecoderError> {
-        let buf = rlp.at(2)?.as_raw();
+        let buf: Vec<u8> = rlp.at(2)?.as_val()?;
         Ok(Self {
             id:     rlp.at(0)?.as_val()?,
             name:   rlp.at(1)?.as_val()?,
@@ -165,7 +165,7 @@ impl FixedCodec for Asset {
 
 impl rlp::Decodable for AllowanceCodec {
     fn decode(rlp: &rlp::Rlp) -> Result<Self, rlp::DecoderError> {
-        let buf = rlp.at(1)?.as_raw();
+        let buf: Vec<u8> = rlp.at(1)?.as_val()?;
         Ok(Self {
             addr:  rlp.at(0)?.as_val()?,
             total: LittleEndian::read_u128(&buf),
@@ -184,7 +184,7 @@ impl rlp::Encodable for AllowanceCodec {
 
 impl rlp::Decodable for AssetBalance {
     fn decode(rlp: &rlp::Rlp) -> Result<Self, rlp::DecoderError> {
-        let buf = rlp.at(0)?.as_raw();
+        let buf: Vec<u8> = rlp.at(0)?.as_val()?;
         let value = LittleEndian::read_u128(&buf);
         let codec_list: Vec<AllowanceCodec> = rlp::decode_list(rlp.at(1)?.as_raw());
         let mut allowance = BTreeMap::new();

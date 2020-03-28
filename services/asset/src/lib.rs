@@ -151,9 +151,9 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         if !self.assets.contains(&token_id)? {
             let asset = Asset {
                 id:     token_id.clone(),
-                name:   "ckb-image_token".to_owned() + &token_id.as_hex().as_str()[2..6],
+                name:   "ckb-image_token".to_owned() + &token_id.as_hex().as_str()[2..7],
                 supply: 0,
-                issuer: Address::from_hex("0xckbudt0000000000000000000000000000000000")?,
+                issuer: Address::from_hex("0xc4b0000000000000000000000000000000000000")?,
             };
             self.assets.insert(token_id.clone(), asset.clone())?;
             let asset_balance = AssetBalance {
