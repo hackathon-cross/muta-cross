@@ -987,6 +987,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "crosschain"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "binding-macro",
+ "byteorder",
+ "bytes 0.5.4",
+ "cita_trie",
+ "derive_more 0.15.0",
+ "framework",
+ "muta-protocol",
+ "rlp 0.4.4",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "crunchy"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2115,6 +2132,7 @@ version = "0.2.0"
 dependencies = [
  "asset 0.2.0",
  "clap",
+ "crosschain",
  "derive_more 0.15.0",
  "metadata 0.2.0",
  "muta",

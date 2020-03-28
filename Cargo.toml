@@ -15,10 +15,12 @@ clap = "2.33"
 metadata = { path = "services/metadata" }
 asset = { path = "services/asset" }
 node_manager = { path = "services/node_manager" }
+crosschain = { path = "services/crosschain" }
 
 [workspace]
 members = [
   "services/metadata",
   "services/asset",
+  "services/crosschain",
   "services/node_manager"
 ]

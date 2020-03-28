@@ -7,45 +7,40 @@ use std::collections::BTreeMap;
 use bytes::Bytes;
 use derive_more::{Display, From};
 
-use binding_macro::{cycles, genesis, service, tx_hook_before, write};
-use protocol::traits::{ExecutorParams, ServiceSDK, StoreMap, StoreUint64};
+use binding_macro::{cycles, genesis, service, write};
+use protocol::traits::{ExecutorParams, ServiceSDK, StoreMap};
 use protocol::types::{Address, Hash, ServiceContext};
 use protocol::{ProtocolError, ProtocolErrorKind, ProtocolResult};
 
 use crate::types::{
-    ApproveEvent, ApprovePayload, Asset, AssetBalance, CreateAssetPayload, GetAllowancePayload,
-    GetAllowanceResponse, GetAssetPayload, GetBalancePayload, GetBalanceResponse,
-    InitGenesisPayload, TransferEvent, TransferFromEvent, TransferFromPayload, TransferPayload,
+    ApproveEvent, ApprovePayload, Asset, AssetBalance, BurnTokenPayload, CreateAssetPayload,
+    GetAllowancePayload, GetAllowanceResponse, GetAssetPayload, GetBalancePayload,
+    GetBalanceResponse, InitGenesisPayload, MintTokenPayload, TransferEvent, TransferFromEvent,
+    TransferFromPayload, TransferPayload,
 };
 
 const NATIVE_ASSET_KEY: &str = "native_asset";
-const FEE_ASSET_KEY: &str = "fee_asset";
-const FEE_ACCOUNT_KEY: &str = "fee_account";
 
 pub struct AssetService<SDK> {
     sdk:    SDK,
     assets: Box<dyn StoreMap<Hash, Asset>>,
-    fee:    Box<dyn StoreUint64>,
 }
 
 #[service]
 impl<SDK: ServiceSDK> AssetService<SDK> {
     pub fn new(mut sdk: SDK) -> ProtocolResult<Self> {
         let assets: Box<dyn StoreMap<Hash, Asset>> = sdk.alloc_or_recover_map("assets")?;
-        let fee = sdk.alloc_or_recover_uint64("fee")?;
 
-        Ok(Self { sdk, assets, fee })
+        Ok(Self { sdk, assets })
     }
 
     #[genesis]
     fn init_genesis(&mut self, payload: InitGenesisPayload) -> ProtocolResult<()> {
         let asset = Asset {
-            id:        payload.id.clone(),
-            name:      payload.name,
-            symbol:    payload.symbol,
-            supply:    payload.supply,
-            precision: payload.precision,
-            issuer:    payload.issuer.clone(),
+            id:     payload.id.clone(),
+            name:   payload.name,
+            supply: payload.supply,
+            issuer: payload.issuer.clone(),
         };
 
         self.assets.insert(asset.id.clone(), asset.clone())?;
@@ -57,31 +52,8 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             allowance: BTreeMap::new(),
         };
 
-        self.sdk.set_value(FEE_ASSET_KEY.to_owned(), payload.id)?;
-        self.sdk
-            .set_value(FEE_ACCOUNT_KEY.to_owned(), payload.fee_account)?;
-        self.fee.set(payload.fee)?;
         self.sdk
             .set_account_value(&asset.issuer, asset.id, asset_balance)
-    }
-
-    #[tx_hook_before]
-    fn tx_hook_before_(&mut self, ctx: ServiceContext) -> ProtocolResult<()> {
-        let caller = ctx.get_caller();
-        let asset_id: Hash = self
-            .sdk
-            .get_value(&FEE_ASSET_KEY.to_owned())?
-            .expect("fee asset should not be empty");
-        let to: Address = self
-            .sdk
-            .get_value(&FEE_ACCOUNT_KEY.to_owned())?
-            .expect("fee account should not be empty");
-        let value = self.fee.get()?;
-        if caller == to {
-            return Ok(());
-        }
-        self._transfer(caller, to, asset_id, value)
-            .map_err(|_e| ServiceError::FeeNotEnough.into())
     }
 
     #[cycles(100_00)]
@@ -168,6 +140,84 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
     }
 
+    #[write]
+    fn mint_token(&mut self, ctx: ServiceContext, payload: MintTokenPayload) -> ProtocolResult<()> {
+        if ctx.get_extra().is_none() {
+            return Err(ServiceError::NoPermission.into());
+        }
+
+        let token_id = payload.token_id;
+
+        if !self.assets.contains(&token_id)? {
+            let asset = Asset {
+                id:     token_id.clone(),
+                name:   "ckb-image_token".to_owned() + &token_id.as_hex().as_str()[2..6],
+                supply: 0,
+                issuer: Address::from_hex("0xckbudt0000000000000000000000000000000000")?,
+            };
+            self.assets.insert(token_id.clone(), asset.clone())?;
+            let asset_balance = AssetBalance {
+                value:     payload.amount,
+                allowance: BTreeMap::new(),
+            };
+            self.sdk
+                .set_account_value(&payload.receiver, asset.id.clone(), asset_balance)?;
+        } else {
+            let mut receiver_balance: AssetBalance = self
+                .sdk
+                .get_account_value(&payload.receiver, &token_id)?
+                .unwrap_or(AssetBalance {
+                    value:     0,
+                    allowance: BTreeMap::new(),
+                });
+
+            let (v, overflow) = receiver_balance.value.overflowing_add(payload.amount);
+            if overflow {
+                return Err(ServiceError::U128Overflow.into());
+            }
+            receiver_balance.value = v;
+
+            self.sdk
+                .set_account_value(&payload.receiver, token_id.clone(), receiver_balance)?;
+        }
+
+        Ok(())
+    }
+
+    #[write]
+    fn burn_token(&mut self, ctx: ServiceContext, payload: BurnTokenPayload) -> ProtocolResult<()> {
+        if ctx.get_extra().is_none() {
+            return Err(ServiceError::NoPermission.into());
+        }
+        if !self.assets.contains(&payload.token_id)? {
+            return Err(ServiceError::NotFoundAsset {
+                id: payload.token_id,
+            }
+            .into());
+        }
+
+        let mut user_asset_balance: AssetBalance = self
+            .sdk
+            .get_account_value(&payload.user, &payload.token_id)?
+            .unwrap_or(AssetBalance {
+                value:     0,
+                allowance: BTreeMap::new(),
+            });
+        let user_balance = user_asset_balance.value;
+
+        if user_balance < payload.amount {
+            return Err(ServiceError::LackOfBalance {
+                expect: payload.amount,
+                real:   user_balance,
+            }
+            .into());
+        }
+
+        user_asset_balance.value = user_balance - payload.amount;
+        self.sdk
+            .set_account_value(&payload.user, payload.token_id.clone(), user_asset_balance)
+    }
+
     #[cycles(210_00)]
     #[write]
     fn create_asset(
@@ -184,12 +234,10 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             return Err(ServiceError::Exists { id }.into());
         }
         let asset = Asset {
-            id:        id.clone(),
-            name:      payload.name,
-            symbol:    payload.symbol,
-            supply:    payload.supply,
-            precision: payload.precision,
-            issuer:    caller,
+            id:     id.clone(),
+            name:   payload.name,
+            supply: payload.supply,
+            issuer: caller,
         };
         self.assets.insert(id, asset.clone())?;
 
@@ -344,7 +392,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         sender: Address,
         recipient: Address,
         asset_id: Hash,
-        value: u64,
+        value: u128,
     ) -> ProtocolResult<()> {
         if sender == recipient {
             return Err(ServiceError::RecipientIsSender.into());
@@ -377,7 +425,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
 
         let (v, overflow) = to_asset_balance.value.overflowing_add(value);
         if overflow {
-            return Err(ServiceError::U64Overflow.into());
+            return Err(ServiceError::U128Overflow.into());
         }
         to_asset_balance.value = v;
 
@@ -386,7 +434,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
 
         let (v, overflow) = sender_balance.overflowing_sub(value);
         if overflow {
-            return Err(ServiceError::U64Overflow.into());
+            return Err(ServiceError::U128Overflow.into());
         }
         sender_asset_balance.value = v;
         self.sdk
@@ -413,17 +461,19 @@ pub enum ServiceError {
 
     #[display(fmt = "Not found asset, expect {:?} real {:?}", expect, real)]
     LackOfBalance {
-        expect: u64,
-        real:   u64,
+        expect: u128,
+        real:   u128,
     },
 
     FeeNotEnough,
 
-    U64Overflow,
+    U128Overflow,
 
     RecipientIsSender,
 
     ApproveToYourself,
+
+    NoPermission,
 }
 
 impl std::error::Error for ServiceError {}
